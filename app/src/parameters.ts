@@ -1,9 +1,13 @@
-import { defaultModel } from "./openai";
+import { defaultModel, defaultVersion } from "./openai";
 import { Parameters } from "./types";
 
 export const defaultParameters: Parameters = {
+    top_p: 1,
+    maxtoken: 400,
+    pastMessagesIncluded: 5,
     temperature: 0.5,
-    model: defaultModel
+    model: defaultModel,
+    version: defaultVersion,
 };
 
 export function loadParameters(id: string | null | undefined = null): Parameters {
@@ -29,7 +33,7 @@ export function saveParameters(id: string, parameters: Parameters) {
         localStorage.setItem('parameters', JSON.stringify(parameters));
 
         if (apiKey) {
-            localStorage.setItem(`openai-api-key`, apiKey);
+            localStorage.setItem(`MicrosoftAzure openai-api-key`, apiKey);
         }
     }
 }

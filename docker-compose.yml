@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   app:
@@ -10,7 +10,7 @@ services:
       - ./data:/app/data
     command: npm run start
     ports:
-      - 3000:3000
+      - 19999:19999
     environment:
-      - PORT=3000
-      - WEBAPP_PORT=3000
+      - PORT=19999
+      - WEBAPP_PORT=19999

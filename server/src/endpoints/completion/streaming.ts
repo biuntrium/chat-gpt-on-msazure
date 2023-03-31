@@ -1,30 +1,37 @@
 // @ts-ignore
 import { EventSource } from "launchdarkly-eventsource";
+import { OpenAIMessage, Parameters } from '../../../../app/src/types';
 import express from 'express';
-import RequestHandler from "../base";
 
+
+// こいつがいつ呼び出されるのかわからん
 export default class StreamingCompletionRequestHandler extends RequestHandler {
-    async handler(req: express.Request, res: express.Response) {
+    async handler(req: express.Request, res: express.Response, parameters: Parameters) {
         res.set({
             'Content-Type': 'text/event-stream',
             'Cache-Control': 'no-cache',
             Connection: 'keep-alive',
         });
 
-        const eventSource = new EventSource('https://api.openai.com/v1/chat/completions', {
+        console.log("C", req.body);
+        const eventSource = new EventSource(`https://${parameters.endpoint}.openai.azure.com/openai/deployments/${parameters.model}/completions?api-version=${parameters.version}`, {
             method: "POST",
             headers: {
-                'Accept': 'application/json, text/plain, */*',
-                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                // 'api-type' : `azure`,
+                // 'Accept': 'application/json, text/plain, */*',
+                'api-key': parameters.apiKey,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 ...req.body,
-                stream: true,
+                "max_tokens": 400,
+                "stream": true,
             }),
         });
 
         eventSource.addEventListener('message', async (event: any) => {
+            console.log(event.data);
+
             res.write(`data: ${event.data}\n\n`);
             res.flush();
 

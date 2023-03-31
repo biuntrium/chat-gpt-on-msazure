@@ -39,5 +39,5 @@ export function configureAuth0(context: ChatServer) {
         res.oidc.callback({
             redirectUri: process.env.PUBLIC_URL!,
         })
-    });
+     });
 }

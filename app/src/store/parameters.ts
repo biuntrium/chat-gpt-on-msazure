@@ -25,13 +25,30 @@ export const parametersSlice = createSlice({
         setTemperature: (state, action: PayloadAction<number>) => {
             state.temperature = action.payload;
         },
+        setTop_p: (state, action: PayloadAction<string>) => {
+            state.top_p = action.payload;
+        },
+        setMaxToken: (state, action: PayloadAction<number>) => {
+            state.maxtoken = action.payload;
+        },
+        // resetMaxToken: (state) => {
+        //     state.temperature = defaultModel;
+        // },
+        setPastMessagesIncluded: (state, action: PayloadAction<number>) => {
+            state.pastMessagesIncluded = action.payload;
+        },
+        // resetPastMessagesIncluded: (state) => {
+        //     state.temperature = defaultModel;
+        // },
     },
 })
 
-export const { setSystemPrompt, setModel, setTemperature, resetSystemPrompt, resetModel } = parametersSlice.actions;
+export const { setSystemPrompt, setModel, setTemperature, setMaxToken, setPastMessagesIncluded, resetSystemPrompt, resetModel } = parametersSlice.actions;
 
 export const selectSystemPrompt = (state: RootState) => state.parameters.initialSystemPrompt;
 export const selectModel = (state: RootState) => state.parameters.model;
 export const selectTemperature = (state: RootState) => state.parameters.temperature;
+export const selectMaxtoken = (state: RootState) => state.parameters.maxtoken
+export const selectIncluded = (state: RootState) => state.parameters.pastMessagesIncluded;
 
 export default parametersSlice.reducer;
