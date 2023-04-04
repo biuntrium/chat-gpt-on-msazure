@@ -151,7 +151,7 @@ export default function GenerationOptionsTab(props: any) {
                         focused={option === 'top_p'}>
             <Slider value={top_p} onChange={onTop_pChange} step={0.1} min={0} max={1} precision={3} />
             <p>
-                <FormattedMessage defaultMessage="The temperature parameter controls the randomness of the AI's responses. Lower values will make the AI more predictable, while higher values will make it more creative." />
+                <FormattedMessage defaultMessage="核サンプリングと呼ばれる、温度によるサンプリングの代替で、確率質量を持つトークンの結果が考慮されます。 したがって、0.1 は、上位 10% の確率質量を含むトークンのみが考慮されることを意味します。 一般的に、これと temperature の両方ではなく、いずれかを変更することをお勧めします。" />
             </p>
         </SettingsOption>
     ), [top_p, option, onTop_pChange]);
