@@ -209,7 +209,7 @@ export class ChatManager extends EventEmitter {
             setTimeout(() => this.search.update(chat), 500);
 
             if (!chat.title) {
-                chat.title = await createTitle(chat, requestedParameters.apiKey);
+                chat.title = await createTitle(chat, requestedParameters.apiKey, requestedParameters.endpoint, requestedParameters.model, requestedParameters.version);
                 if (chat.title) {
                     this.emit(chat.id);
                     this.emit('title', chat.id, chat.title);

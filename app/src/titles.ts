@@ -1,4 +1,4 @@
-import { createChatCompletion, defaultModel } from "./openai";
+import { createChatCompletion, defaultModel, defaultEndpoint, defaultVersion } from "./openai";
 import { OpenAIMessage, Chat } from "./types";
 
 const systemPrompt = `
@@ -13,8 +13,23 @@ Response: ${assistant}
 Title:
 `.trim();
 
-export async function createTitle(chat: Chat, apiKey: string | undefined | null, attempt = 0): Promise<string|null> {
+export async function createTitle(
+        chat: Chat,
+        endpoint: string | undefined | null,
+        model: string | undefined | null,
+        version: string | undefined | null,
+        apiKey: string | undefined | null,
+        attempt = 0): Promise<string|null> {
     if (!apiKey) {
+        return null;
+    }
+    if (!endpoint) {
+        return null;
+    }
+    if (!model) {
+        return null;
+    }
+    if (!version) {
         return null;
     }
 
@@ -38,9 +53,9 @@ export async function createTitle(chat: Chat, apiKey: string | undefined | null,
         },
     ];// ここ、REST形式にパースしないと正しく動かないかも
 
-    console.log(messages, defaultModel);
+    // console.log(messages, defaultModel);
 
-    let title = await createChatCompletion(messages as any, { temperature: 0.5, model: defaultModel, apiKey , maxtoken: 400, pastMessagesIncluded: 5});
+    let title = await createChatCompletion(messages as any, { temperature: 0.5, endpoint, model, version, apiKey , maxtoken: 400, pastMessagesIncluded: 5, top_p:1});
 
     if (!title?.length) {
         if (firstUserMessage.content.trim().length > 2 && firstUserMessage.content.trim().length < 250) {
@@ -48,7 +63,7 @@ export async function createTitle(chat: Chat, apiKey: string | undefined | null,
         }
 
         if (attempt === 0) {
-            return createTitle(chat, apiKey, 1);
+            return createTitle(chat, endpoint, model, version, apiKey, 1);
         }
     }
 

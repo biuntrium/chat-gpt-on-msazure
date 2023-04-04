@@ -2,9 +2,9 @@ import SettingsTab from "./tab";
 import SettingsOption from "./option";
 import { Button, Select, Slider, Textarea } from "@mantine/core";
 import { useCallback, useMemo } from "react";
-import { defaultSystemPrompt, defaultModel } from "../../openai";
+import { defaultSystemPrompt, defaultModel, defaultEndpoint, defaultVersion } from "../../openai";
 import { useAppDispatch, useAppSelector } from "../../store";
-import { resetModel, setModel, selectModel, resetSystemPrompt, selectSystemPrompt, selectTemperature, setSystemPrompt, setTemperature , setMaxToken, setPastMessagesIncluded, selectMaxtoken, selectIncluded} from "../../store/parameters";
+import { resetModel, setModel, selectModel, resetSystemPrompt, resetEndpoint, resetVersion, selectSystemPrompt, selectTemperature, setSystemPrompt, setTemperature , setMaxToken, setPastMessagesIncluded, setVersion, setTop_p, setEndpoint, selectMaxtoken, selectIncluded, selectTop_p, selectVersion, selectEndpoint} from "../../store/parameters";
 import { selectSettingsOption } from "../../store/settings-ui";
 import { FormattedMessage, useIntl } from "react-intl";
 
@@ -15,15 +15,22 @@ export default function GenerationOptionsTab(props: any) {
     const initialSystemPrompt = useAppSelector(selectSystemPrompt);
     const model = useAppSelector(selectModel);
     const temperature = useAppSelector(selectTemperature);
-    const top_p = useAppSelector(selectTemperature);
+    const top_p = useAppSelector(selectTop_p);
     const maxtoken = useAppSelector(selectMaxtoken);
     const included = useAppSelector(selectIncluded);
+    const version = useAppSelector(selectVersion);
+    const endpoint = useAppSelector(selectEndpoint)
 
     const dispatch = useAppDispatch();
     const onSystemPromptChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => dispatch(setSystemPrompt(event.target.value)), [dispatch]);
-    const onModelChange = useCallback((value: string) => dispatch(setModel(value)), [dispatch]);
+    const onEndpointChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => dispatch(setEndpoint(event.target.value)), [dispatch]);
+    const onModelChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => dispatch(setModel(event.target.value)), [dispatch]);
+    const onVersionChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => dispatch(setVersion(event.target.value)), [dispatch]);
+    const onTop_pChange = useCallback((value: number) => dispatch(setTop_p(value)), [dispatch]);
     const onResetSystemPrompt = useCallback(() => dispatch(resetSystemPrompt()), [dispatch]);
     const onResetModel = useCallback(() => dispatch(resetModel()), [dispatch]);
+    const onResetEndpoint = useCallback(() => dispatch(resetEndpoint()), [dispatch]);
+    const onResetVersion = useCallback(() => dispatch(resetVersion()), [dispatch]);
     const onTemperatureChange = useCallback((value: number) => dispatch(setTemperature(value)), [dispatch]);
     // スライダーか数値ボックスかでコールバック変える
     // const onMaxtokenChange = useCallback((value: number) => dispatch(setMaxToken(value)), [dispatch]);
@@ -35,6 +42,12 @@ export default function GenerationOptionsTab(props: any) {
         && (initialSystemPrompt?.trim() !== defaultSystemPrompt.trim());
 
     const resettableModel = model
+        && (model?.trim() !== defaultModel.trim());
+    
+    const resettableEndpoint = model
+        && (model?.trim() !== defaultModel.trim());
+    
+    const resettableVersion = model
         && (model?.trim() !== defaultModel.trim());
 
     const systemPromptOption = useMemo(() => (
@@ -56,26 +69,66 @@ export default function GenerationOptionsTab(props: any) {
         </SettingsOption>
     ), [option, initialSystemPrompt, resettableSystemPromopt, onSystemPromptChange, onResetSystemPrompt]);
 
+    const endpointOption = useMemo(() => (
+        <SettingsOption heading={intl.formatMessage({ defaultMessage: "Model", description: "Heading for the setting that lets users choose a model to interact with, on the settings screen" })}
+                        focused={option === 'model'}>
+            <Textarea
+                value={defaultEndpoint}
+                onChange={onEndpointChange}
+                minRows={1}
+                maxRows={10}
+                autosize />
+
+            <p style={{ marginBottom: '0.7rem' }}>
+                <FormattedMessage defaultMessage="Note : https://{YOUR_RESOURCE_NAME}.openai.azure.com<a>API reference here</a>"
+                    values={{ a: chunk => <a href="https://learn.microsoft.com/ja-jp/azure/cognitive-services/openai/reference" target="_blank" rel="noreferer">{chunk}</a> }} />
+            </p>
+
+            {resettableEndpoint && <Button size="xs" compact variant="light" onClick={onResetEndpoint}>
+                <FormattedMessage defaultMessage="Reset to default" />
+            </Button>}
+        </SettingsOption>
+    ), [option, endpoint, resettableModel, onModelChange, onResetModel]);
+
     const modelOption = useMemo(() => (
         <SettingsOption heading={intl.formatMessage({ defaultMessage: "Model", description: "Heading for the setting that lets users choose a model to interact with, on the settings screen" })}
                         focused={option === 'model'}>
             <Textarea
-                value={model || defaultModel}
-                onChange={onSystemPromptChange}
+                value={defaultModel}
+                onChange={onModelChange}
                 minRows={1}
-                maxRows={1}
+                maxRows={10}
                 autosize />
-            {model === 'gpt-4' && (
-                <p style={{ marginBottom: '0.7rem' }}>
-                    <FormattedMessage defaultMessage="Note: GPT-4 will only work if your OpenAI account has been granted access to the new model. <a>Request access here.</a>"
-                        values={{ a: chunk => <a href="https://openai.com/waitlist/gpt-4-api" target="_blank" rel="noreferer">{chunk}</a> }} />
-                </p>
-            )}
+
+            <p style={{ marginBottom: '0.7rem' }}>
+                <FormattedMessage defaultMessage="Note: https://{YOUR_RESOURCE_NAME}.openai.azure.com/openai/deployments/{YOUR_DEPLOYMENT_NAME}<a>API reference here</a>"
+                    values={{ a: chunk => <a href="https://learn.microsoft.com/ja-jp/azure/cognitive-services/openai/reference" target="_blank" rel="noreferer">{chunk}</a> }} />
+            </p>
+
             {resettableModel && <Button size="xs" compact variant="light" onClick={onResetModel}>
                 <FormattedMessage defaultMessage="Reset to default" />
             </Button>}
         </SettingsOption>
     ), [option, model, resettableModel, onModelChange, onResetModel]);
+
+    const versionOption = useMemo(() => (
+        <SettingsOption heading={intl.formatMessage({ defaultMessage: "Version", description: "MS Azure API Version." })}
+                        focused={option === 'version'}>
+            <Textarea
+                value={defaultVersion}
+                onChange={onVersionChange}
+                minRows={1}
+                maxRows={10}
+                autosize />
+            <p style={{ marginBottom: '0.7rem' }}>
+                    <FormattedMessage defaultMessage="As of 2023/04/04, the VersionNote : 2022-12-01, "
+                    />
+                </p>
+            {resettableVersion && <Button size="xs" compact variant="light" onClick={onResetVersion}>
+                <FormattedMessage defaultMessage="Reset to default" />
+            </Button>}
+        </SettingsOption>
+    ), [option, version, onVersionChange]);
 
     const temperatureOption = useMemo(() => (
         <SettingsOption heading={intl.formatMessage({
@@ -96,12 +149,12 @@ export default function GenerationOptionsTab(props: any) {
                             description: "Label for the button that opens a modal for setting the 'temperature' (randomness) of AI responses",
                         }, { top_p })}
                         focused={option === 'temperature'}>
-            <Slider value={temperature} onChange={onTemperatureChange} step={0.1} min={0} max={1} precision={3} />
+            <Slider value={top_p} onChange={onTop_pChange} step={0.1} min={0} max={1} precision={3} />
             <p>
                 <FormattedMessage defaultMessage="The temperature parameter controls the randomness of the AI's responses. Lower values will make the AI more predictable, while higher values will make it more creative." />
             </p>
         </SettingsOption>
-    ), [temperature, option, onTemperatureChange]);
+    ), [temperature, option, onTop_pChange]);
 
     const maxtokenOption = useMemo(() => (
         <SettingsOption
@@ -122,7 +175,7 @@ export default function GenerationOptionsTab(props: any) {
                 max={4000}
             />
             <p>
-                <FormattedMessage defaultMessage="「Max Token」とは、テキスト内トークン（単語、句読点、特殊文字など）の処理可能な総数を指します。\nトークン数は、言語モデルがテキストを処理する際の計算負荷や、テキストの長さを評価するために使用されます。\n例えば、次の文章を考えてみましょう:「これはテストです。」\nこの文章は次のトークンに分割されます\n\nこれは\nテスト\nです\n。\n\nこの場合、トークン数は4です。言語モデルがこの文章を解析する際には、4つのトークンをそれぞれ処理します。\n\n言語モデルの性能や応答速度は、トークン数に影響されます。処理すべきトークン数が多ければ多いほど、モデルがテキストを理解し、適切な回答を生成するのに時間がかかります。また、トークン数が多い場合、モデルが必要とする計算リソースも増えます。" />
+                <FormattedMessage defaultMessage="「Max Token」とは、テキスト内トークン（単語、句読点、特殊文字など）の処理可能な総数を指します。トークン数は、言語モデルがテキストを処理する際の計算負荷や、テキストの長さを評価するために使用されます。例えば、次の文章を考えてみましょう:「これはテストです。」この文章は次のトークンに分割されます。[これは][テスト][です][。]この場合、トークン数は4です。言語モデルがこの文章を解析する際には、4つのトークンをそれぞれ処理します。言語モデルの性能や応答速度は、トークン数に影響されます。処理すべきトークン数が多ければ多いほど、モデルがテキストを理解し、適切な回答を生成するのに時間がかかります。また、トークン数が多い場合、モデルが必要とする計算リソースも増えます。" />
             </p>
         </SettingsOption>
     ), [maxtoken, option, onMaxtokenChange]);
@@ -150,12 +203,15 @@ export default function GenerationOptionsTab(props: any) {
     const elem = useMemo(() => (
         <SettingsTab name="options">
             {systemPromptOption}
+            {endpointOption}
             {modelOption}
+            {versionOption}
             {temperatureOption}
+            {top_pOption}
             {maxtokenOption}
             {includedOption}
         </SettingsTab>
-    ), [systemPromptOption, modelOption, temperatureOption, maxtokenOption, includedOption]);
+    ), [systemPromptOption, endpointOption, modelOption, versionOption,temperatureOption, top_pOption,maxtokenOption, includedOption]);
 
     return elem;
 }

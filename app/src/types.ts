@@ -7,9 +7,9 @@ export interface Parameters {
     top_p: number;
     apiKey?: string;
     initialSystemPrompt?: string;
-    model: string;
-    endpoint: string;
-    version: string;
+    model?: string;
+    endpoint?: string;
+    version?: string;
 
 }
 

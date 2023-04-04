@@ -1,7 +1,8 @@
-import { defaultModel, defaultVersion } from "./openai";
+import { defaultModel, defaultVersion, defaultEndpoint } from "./openai";
 import { Parameters } from "./types";
 
 export const defaultParameters: Parameters = {
+    endpoint: defaultEndpoint,
     top_p: 1,
     maxtoken: 400,
     pastMessagesIncluded: 5,

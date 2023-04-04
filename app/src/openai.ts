@@ -12,7 +12,8 @@ Knowledge cutoff: 2021-09
 Current date and time: {{ datetime }}
 `.trim();
 
-export const defaultModel = '*********';
+export const defaultEndpoint = 'YOUR_RESOURCE_NAME';
+export const defaultModel = 'YOUR_DEPLOYMENT_NAME';
 export const defaultVersion = '2022-12-01';
 
 
