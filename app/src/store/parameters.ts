@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '.';
-import { defaultSystemPrompt, defaultModel, defaultEndpoint } from '../openai';
+import { defaultSystemPrompt, defaultModel, defaultEndpoint, defaultVersion } from '../openai';
 import { defaultParameters } from '../parameters';
 import { Parameters } from '../types';
 
@@ -35,7 +35,7 @@ export const parametersSlice = createSlice({
             state.version = action.payload;
         },
         resetVersion: (state) => {
-            state.version = defaultModel;
+            state.version = defaultVersion;
         },
         setEndpoint: (state, action: PayloadAction<string>) => {
             state.endpoint = action.payload;

@@ -34,7 +34,7 @@ export function saveParameters(id: string, parameters: Parameters) {
         localStorage.setItem('parameters', JSON.stringify(parameters));
 
         if (apiKey) {
-            localStorage.setItem(`MicrosoftAzure openai-api-key`, apiKey);
+            localStorage.setItem(`openai-api-key`, apiKey);
         }
     }
 }

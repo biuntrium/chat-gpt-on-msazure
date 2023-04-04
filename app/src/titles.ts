@@ -55,7 +55,7 @@ export async function createTitle(
 
     // console.log(messages, defaultModel);
 
-    let title = await createChatCompletion(messages as any, { temperature: 0.5, endpoint, model, version, apiKey , maxtoken: 400, pastMessagesIncluded: 5, top_p:1});
+    let title = await createChatCompletion(messages as any, { temperature: 0.5, endpoint: endpoint, model: model, version: version, apiKey: apiKey , maxtoken: 400, pastMessagesIncluded: 5, top_p:1});
 
     if (!title?.length) {
         if (firstUserMessage.content.trim().length > 2 && firstUserMessage.content.trim().length < 250) {

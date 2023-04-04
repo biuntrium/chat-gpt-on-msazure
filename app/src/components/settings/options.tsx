@@ -70,17 +70,17 @@ export default function GenerationOptionsTab(props: any) {
     ), [option, initialSystemPrompt, resettableSystemPromopt, onSystemPromptChange, onResetSystemPrompt]);
 
     const endpointOption = useMemo(() => (
-        <SettingsOption heading={intl.formatMessage({ defaultMessage: "Model", description: "Heading for the setting that lets users choose a model to interact with, on the settings screen" })}
-                        focused={option === 'model'}>
+        <SettingsOption heading={intl.formatMessage({ defaultMessage: "Endpoint", description: "Heading for the setting that lets users choose a model to interact with, on the settings screen" })}
+                        focused={option === 'endopint'}>
             <Textarea
-                value={defaultEndpoint}
+                value={endpoint || defaultEndpoint}
                 onChange={onEndpointChange}
                 minRows={1}
                 maxRows={10}
                 autosize />
 
             <p style={{ marginBottom: '0.7rem' }}>
-                <FormattedMessage defaultMessage="Note : https://{YOUR_RESOURCE_NAME}.openai.azure.com<a>API reference here</a>"
+                <FormattedMessage defaultMessage="Note : https://YOUR_RESOURCE_NAME.openai.azure.com<a>API reference here</a>"
                     values={{ a: chunk => <a href="https://learn.microsoft.com/ja-jp/azure/cognitive-services/openai/reference" target="_blank" rel="noreferer">{chunk}</a> }} />
             </p>
 
@@ -88,20 +88,20 @@ export default function GenerationOptionsTab(props: any) {
                 <FormattedMessage defaultMessage="Reset to default" />
             </Button>}
         </SettingsOption>
-    ), [option, endpoint, resettableModel, onModelChange, onResetModel]);
+    ), [option, endpoint, resettableEndpoint, onEndpointChange, onResetEndpoint]);
 
     const modelOption = useMemo(() => (
         <SettingsOption heading={intl.formatMessage({ defaultMessage: "Model", description: "Heading for the setting that lets users choose a model to interact with, on the settings screen" })}
                         focused={option === 'model'}>
             <Textarea
-                value={defaultModel}
+                value={model || defaultModel}
                 onChange={onModelChange}
                 minRows={1}
                 maxRows={10}
                 autosize />
 
             <p style={{ marginBottom: '0.7rem' }}>
-                <FormattedMessage defaultMessage="Note: https://{YOUR_RESOURCE_NAME}.openai.azure.com/openai/deployments/{YOUR_DEPLOYMENT_NAME}<a>API reference here</a>"
+                <FormattedMessage defaultMessage="Note: https://YOUR_RESOURCE_NAME.openai.azure.com/openai/deployments/YOUR_DEPLOYMENT_NAME<a>API reference here</a>"
                     values={{ a: chunk => <a href="https://learn.microsoft.com/ja-jp/azure/cognitive-services/openai/reference" target="_blank" rel="noreferer">{chunk}</a> }} />
             </p>
 
@@ -115,7 +115,7 @@ export default function GenerationOptionsTab(props: any) {
         <SettingsOption heading={intl.formatMessage({ defaultMessage: "Version", description: "MS Azure API Version." })}
                         focused={option === 'version'}>
             <Textarea
-                value={defaultVersion}
+                value={version || defaultVersion}
                 onChange={onVersionChange}
                 minRows={1}
                 maxRows={10}
@@ -128,7 +128,7 @@ export default function GenerationOptionsTab(props: any) {
                 <FormattedMessage defaultMessage="Reset to default" />
             </Button>}
         </SettingsOption>
-    ), [option, version, onVersionChange]);
+    ), [option, version, resettableVersion, onVersionChange, onResetVersion]);
 
     const temperatureOption = useMemo(() => (
         <SettingsOption heading={intl.formatMessage({
@@ -145,16 +145,16 @@ export default function GenerationOptionsTab(props: any) {
 
     const top_pOption = useMemo(() => (
         <SettingsOption heading={intl.formatMessage({
-                            defaultMessage: "Temperature: {temperature, number, ::.0}", 
+                            defaultMessage: "Top_p: {top_p, number, ::.0}", 
                             description: "Label for the button that opens a modal for setting the 'temperature' (randomness) of AI responses",
                         }, { top_p })}
-                        focused={option === 'temperature'}>
+                        focused={option === 'top_p'}>
             <Slider value={top_p} onChange={onTop_pChange} step={0.1} min={0} max={1} precision={3} />
             <p>
                 <FormattedMessage defaultMessage="The temperature parameter controls the randomness of the AI's responses. Lower values will make the AI more predictable, while higher values will make it more creative." />
             </p>
         </SettingsOption>
-    ), [temperature, option, onTop_pChange]);
+    ), [top_p, option, onTop_pChange]);
 
     const maxtokenOption = useMemo(() => (
         <SettingsOption

@@ -5,12 +5,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: chatra_app
     working_dir: /app
     volumes:
       - ./data:/app/data
     command: npm run start
     ports:
-      - 29999:29999
+      - 3000:3000
     environment:
-      - PORT=29999
-      - WEBAPP_PORT=29999
+      - PORT=3000
+      - WEBAPP_PORT=3000

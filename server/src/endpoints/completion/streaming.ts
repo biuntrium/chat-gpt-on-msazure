@@ -1,12 +1,16 @@
 // @ts-ignore
 import { EventSource } from "launchdarkly-eventsource";
-import { OpenAIMessage, Parameters } from '../../../../app/src/types';
+import { OpenAIMessage, Parameters } from '../../../../app/src/types'; 
+// build時に
+// src/endpoints/completion/streaming.ts(3,43): error TS2307: Cannot find module '../../../../app/src/types' or its corresponding type declarations.
 import express from 'express';
+import RequestHandler from "../base";
 
 
 // こいつがいつ呼び出されるのかわからん
+// タイトルかな？
 export default class StreamingCompletionRequestHandler extends RequestHandler {
-    async handler(req: express.Request, res: express.Response, parameters: Parameters) {
+    async handler(req: express.Request, res: express.Response) {
         res.set({
             'Content-Type': 'text/event-stream',
             'Cache-Control': 'no-cache',
