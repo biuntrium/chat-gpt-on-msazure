@@ -2,6 +2,9 @@ import EventEmitter from "events";
 import { Configuration, OpenAIApi } from "openai";
 import SSE from "./sse";
 import { OpenAIMessage, Parameters } from "./types";
+import axios from 'axios';
+import {CoreBPE} from './tokenizer/bpe';
+import GPT3Tokenizer from 'gpt3-tokenizer';
 
 export const defaultSystemPrompt = `
 You are ChatGPT, a large language model trained by OpenAI.
@@ -9,15 +12,16 @@ Knowledge cutoff: 2021-09
 Current date and time: {{ datetime }}
 `.trim();
 
-export const defaultModel = 'gpt-3.5-turbo';
+export const defaultEndpoint = 'YOUR_RESOURCE_NAME';
+export const defaultModel = 'YOUR_DEPLOYMENT_NAME';
+export const defaultVersion = '2022-12-01';
+
 
 export interface OpenAIResponseChunk {
     id?: string;
     done: boolean;
     choices?: {
-        delta: {
-            content: string;
-        };
+        text: string;
         index: number;
         finish_reason: string | null;
     }[];
@@ -43,6 +47,18 @@ function parseResponseChunk(buffer: any): OpenAIResponseChunk {
     };
 }
 
+function getElementsAfterNthFromEnd<T>(arr: T[], num: number): T[] {
+    const n = num * 2
+    return arr.slice(-n);
+}
+
+// TODO: 入力トークン数の推定
+function estimateTokenCountUsingBPE(text: string, bpeInstance: CoreBPE): number {
+    const allowedSpecial = new Set<string>(); // 特殊トークンを許可する場合はここで指定
+    const encodedTokens = bpeInstance.encode(text, allowedSpecial);
+    return encodedTokens.length;
+  }
+
 export async function createChatCompletion(messages: OpenAIMessage[], parameters: Parameters): Promise<string> {
     if (!parameters.apiKey) {
         throw new Error('No API key provided');
@@ -53,14 +69,56 @@ export async function createChatCompletion(messages: OpenAIMessage[], parameters
     });
 
     const openai = new OpenAIApi(configuration);
+    // これいらないかも
+    openai["basePath"] = `https://${parameters.endpoint}.openai.azure.com/openai/deployments/${parameters.model}/completions?api-version=${parameters.version}`
 
-    const response = await openai.createChatCompletion({
-        model: parameters.model,
-        temperature: parameters.temperature,
-        messages: messages as any,
-    });
+    const apiUrl = `https://${parameters.endpoint}.openai.azure.com/openai/deployments/${parameters.model}/completions?api-version=${parameters.version}`;
+    const jsonString = JSON.stringify(messages);
 
-    return response.data.choices[0].message?.content?.trim() || '';
+    interface Message {
+        role: string;
+        content: string
+    }
+    const _messages: Message[] = JSON.parse(jsonString);
+    
+    function formatMessages(messages: Message[]): string {
+        let formattedMessages = '';
+    
+        for (const _message of messages) {
+            formattedMessages += `${_message.role}\n`;
+            formattedMessages += `<|im_start|>${_message.content}\n<|im_end|>\n\n`;
+        }
+
+        formattedMessages += "<|im_start|>assistant\n";
+
+    
+        return formattedMessages;
+    }
+    
+    const formattedMessages = formatMessages(_messages);
+
+    const requestData = {
+        prompt: formattedMessages,
+        max_tokens: 200,
+    };
+
+    const requestConfig = {
+        headers: {
+            'Content-Type': 'application/json',
+            'api-key': parameters.apiKey,
+        }
+    };
+
+    try {
+        const response = await axios.post(apiUrl, requestData, requestConfig);
+        // console.log("RES log", response.data.choices[0].text);
+        // console.log("RES log", response.data);
+        const specificStringToRemove = '<|im_end|>';
+        return response.data.choices[0].text.replace(specificStringToRemove, '');
+      } catch (error) {
+        console.error(error);
+        return ''
+      }
 }
 
 export async function createStreamingChatCompletion(messages: OpenAIMessage[], parameters: Parameters) {
@@ -82,6 +140,7 @@ export async function createStreamingChatCompletion(messages: OpenAIMessage[], p
         }
     }
 
+    messagesToSend = getElementsAfterNthFromEnd(messagesToSend, parameters.pastMessagesIncluded);
     messagesToSend.unshift({
         role: 'system',
         content: (parameters.initialSystemPrompt || defaultSystemPrompt).replace('{{ datetime }}', new Date().toLocaleString()),
@@ -89,17 +148,48 @@ export async function createStreamingChatCompletion(messages: OpenAIMessage[], p
 
     messagesToSend = await selectMessagesToSendSafely(messagesToSend, 2048);
 
-    const eventSource = new SSE('https://api.openai.com/v1/chat/completions', {
+
+    const jsonString = JSON.stringify(messagesToSend);
+    // console.log("good news", jsonString);
+    interface Message {
+        role: string;
+        content: string
+    }
+    const _messages: Message[] = JSON.parse(jsonString);
+    
+    function formatMessages(messages: Message[]): string {
+        let formattedMessages = '';
+    
+        for (const _message of messages) {
+            formattedMessages += `${_message.role}\n`;
+            formattedMessages += `<|im_start|>${_message.content}<|im_end|>\n\n`;
+        }
+
+        formattedMessages += "<|im_start|>assistant\n";
+    
+        return formattedMessages;
+    }
+    
+    const formattedMessages = formatMessages(_messages);
+    console.log(formattedMessages);
+
+    const tokenizer = new GPT3Tokenizer({ type: 'gpt3' }); // or 'codex'
+    const str = "hello 👋 world 🌍";
+    const encoded: { bpe: number[]; text: string[] } = tokenizer.encode(str);
+    console.log(encoded.bpe.length);
+    // 今のところデコード予定はない、投げる前にざっくりとしたトークン数を知りたいだけ
+    // 本来はフォーク内のbpeを使ってみたかったが、とりあえず代替処理
+    // const decoded = tokenizer.decode(encoded.bpe);
+    const eventSource = new SSE(`https://${parameters.endpoint}.openai.azure.com/openai/deployments/${parameters.model}/completions?api-version=${parameters.version}`, {
         method: "POST",
         headers: {
-            'Accept': 'application/json, text/plain, */*',
-            'Authorization': `Bearer ${parameters.apiKey}`,
+            'api-key': parameters.apiKey,
             'Content-Type': 'application/json',
         },
         payload: JSON.stringify({
-            "model": parameters.model,
-            "messages": messagesToSend,
             "temperature": parameters.temperature,
+            "prompt": formattedMessages,
+            "max_tokens": parameters.maxtoken,
             "stream": true,
         }),
     }) as SSE;
@@ -140,11 +230,12 @@ export async function createStreamingChatCompletion(messages: OpenAIMessage[], p
             emitter.emit('done');
             return;
         }
-
         try {
             const chunk = parseResponseChunk(event.data);
+
             if (chunk.choices && chunk.choices.length > 0) {
-                contents += chunk.choices[0]?.delta?.content || '';
+                const specificStringToRemove = '<|im_end|>';
+                contents += chunk.choices[0]?.text.replace(specificStringToRemove, '') || '';
                 emitter.emit('data', contents);
             }
         } catch (e) {

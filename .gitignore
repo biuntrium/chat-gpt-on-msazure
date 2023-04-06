@@ -1,6 +1,7 @@
 *.sqlite
 *.db
 .gitpod.yml
+**nohup.out
 
 # Logs
 logs

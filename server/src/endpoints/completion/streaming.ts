@@ -1,8 +1,14 @@
 // @ts-ignore
 import { EventSource } from "launchdarkly-eventsource";
+// import { OpenAIMessage, Parameters } from '../../../../app/src/types'; 
+// build時に
+// src/endpoints/completion/streaming.ts(3,43): error TS2307: Cannot find module '../../../../app/src/types' or its corresponding type declarations.
 import express from 'express';
 import RequestHandler from "../base";
 
+
+// こいつがいつ呼び出されるのかわからん、なぜか動く、openaiモジュール使わないなら必要ない？
+// TODO : 要修正
 export default class StreamingCompletionRequestHandler extends RequestHandler {
     async handler(req: express.Request, res: express.Response) {
         res.set({
@@ -11,20 +17,25 @@ export default class StreamingCompletionRequestHandler extends RequestHandler {
             Connection: 'keep-alive',
         });
 
-        const eventSource = new EventSource('https://api.openai.com/v1/chat/completions', {
+        // `https://${parameters.endpoint}.openai.azure.com/openai/deployments/${parameters.model}/completions?api-version=${parameters.version}`
+        const eventSource = new EventSource("", {
             method: "POST",
             headers: {
-                'Accept': 'application/json, text/plain, */*',
-                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                // 'api-type' : `azure`,
+                // 'Accept': 'application/json, text/plain, */*',
+                // 'api-key': `${process.env.OPENAI_API_KEY}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 ...req.body,
-                stream: true,
+                "max_tokens": 400,
+                "stream": true,
             }),
         });
 
         eventSource.addEventListener('message', async (event: any) => {
+            console.log(event.data);
+
             res.write(`data: ${event.data}\n\n`);
             res.flush();
 

@@ -1,10 +1,16 @@
 import { MessageTree } from "./message-tree";
 
 export interface Parameters {
+    maxtoken: number;
+    pastMessagesIncluded: number;
     temperature: number;
+    top_p: number;
     apiKey?: string;
     initialSystemPrompt?: string;
-    model: string;
+    model?: string;
+    endpoint?: string;
+    version?: string;
+
 }
 
 export interface Message {

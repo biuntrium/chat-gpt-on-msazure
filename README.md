@@ -1,60 +1,37 @@
-# Chat with GPT
+# Chatra
 
-Chat with GPT is an open-source, unofficial ChatGPT app with extra features and more ways to customize your experience. It connects ChatGPT with ElevenLabs to give ChatGPT a realistic human voice.
+![icon](./app/public/logo192.png)
 
-Try out the hosted version at: https://chatwithgpt.netlify.app
+Chatra is an open-source, unofficial ChatGPT app with extra features and more ways to customize your experience.
 
-Or [self-host with Docker](#running-on-your-own-computer).
+This application accesses the Azure OpenAI Service and provides a user interface similar to OpenAI's ChatGPT.
 
-Powered by the new ChatGPT API from OpenAI, this app has been developed using TypeScript + React. We welcome pull requests from the community!
+The biggest difference between OpenAI's ChatGPT and this application is that you can freely change parameters like Temperature and Top_p. This is provided by the Azure OpenAI Service, and you can make changes to the settings through a graphical user interface (GUI).
 
-https://user-images.githubusercontent.com/127109874/223613258-0c4fef2e-1d05-43a1-ac38-e972dafc2f98.mp4
+Try [self-host with Docker](#running-on-your-own-computer).
 
-## Features
+### Azure OpenAI deploy
 
-- 🚀 **Fast** response times.
-- 🔎 **Search** through your past chat conversations.
-- 📄 View and customize the System Prompt - the **secret prompt** the system shows the AI before your messages.
-- 🌡 Adjust the **creativity and randomness** of responses by setting the Temperature setting. Higher temperature means more creativity.
-- 💬 Give ChatGPT AI a **realistic human voice** by connecting your ElevenLabs text-to-speech account.
-- 🎤 **Speech recognition** powered by OpenAI Whisper
-- ✉ **Share** your favorite chat sessions online using public share URLs.
-- 📋 Easily **copy-and-paste** ChatGPT messages.
-- ✏️ Edit your messages
-- 🔁 Regenerate ChatGPT messages
-- 🖼 **Full markdown support** including code, tables, and math.
-- 🫰 Pay for only what you use with the ChatGPT API.
+First, please deploy the GPT model in Azure OpenAI Service. At that time, make a note of the resource name and deployment name.
 
-## Bring your own API keys
-
-### OpenAI
-
-To get started with Chat with GPT, you will need to add your OpenAI API key on the settings screen. Click "Connect your OpenAI account to get started" on the home page to begin. Once you have added your API key, you can start chatting with ChatGPT.
-
-Your API key is stored only on your device and is never transmitted to anyone except OpenAI. Please note that OpenAI API key usage is billed at a pay-as-you-go rate, separate from your ChatGPT subscription.
-
-### ElevenLabs
-
-To use the realistic AI text-to-speech feature, you will need to add your ElevenLabs API key by clicking "Play" next to any message.
-
-Your API key is stored only on your device and never transmitted to anyone except ElevenLabs.
+[Azure OpenAI Service](https://azure.microsoft.com/ja-jp/products/cognitive-services/openai-service)
+[Azure OpenAI Quickstart Documentation](https://learn.microsoft.com/ja-jp/azure/cognitive-services/openai/chatgpt-quickstart?tabs=command-line&pivots=rest-api)
 
 ## Running on your own computer
 
 To run on your own device, you can use Docker:
 
 ```
-docker run -v $(pwd)/data:/app/data -p 3000:3000 ghcr.io/cogentapps/chat-with-gpt:release
+docker-compose build
+```
+
+```
+docker run -v $(pwd)/data:/app/data -p 3000:3000 chatra_app:latest
 ```
 
 Then navigate to http://localhost:3000 to view the app.
 
-## Updating
-
-```
-docker pull ghcr.io/cogentapps/chat-with-gpt:release
-```
-
 ## License
 
-Chat with GPT is licensed under the MIT license. See the LICENSE file for more information.
+This project was forked from the [chat with gpt](https://github.com/cogentapps/chat-with-gpt/tree/main/app/public).
+Chatra is licensed under the MIT license. See the LICENSE file for more information.
