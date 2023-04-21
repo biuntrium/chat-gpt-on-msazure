@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: chatra_app
+    image: chatra_gpt4
     working_dir: /app
     volumes:
       - ./data:/app/data

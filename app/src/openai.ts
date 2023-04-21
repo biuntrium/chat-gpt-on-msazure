@@ -12,16 +12,18 @@ Knowledge cutoff: 2021-09
 Current date and time: {{ datetime }}
 `.trim();
 
-export const defaultEndpoint = 'YOUR_RESOURCE_NAME';
-export const defaultModel = 'YOUR_DEPLOYMENT_NAME';
-export const defaultVersion = '2022-12-01';
+export const defaultEndpoint = "*********";
+export const defaultModel = "*********";
+export const defaultVersion = '2023-03-15-preview';
 
 
 export interface OpenAIResponseChunk {
     id?: string;
     done: boolean;
     choices?: {
-        text: string;
+        delta?: {
+            content?: string | null;
+        };
         index: number;
         finish_reason: string | null;
     }[];
@@ -70,17 +72,15 @@ export async function createChatCompletion(messages: OpenAIMessage[], parameters
 
     const openai = new OpenAIApi(configuration);
     // これいらないかも
-    openai["basePath"] = `https://${parameters.endpoint}.openai.azure.com/openai/deployments/${parameters.model}/completions?api-version=${parameters.version}`
+    openai["basePath"] = `https://${parameters.endpoint}.openai.azure.com/openai/deployments/${parameters.model}/chat/completions?api-version=${parameters.version}`
 
-    const apiUrl = `https://${parameters.endpoint}.openai.azure.com/openai/deployments/${parameters.model}/completions?api-version=${parameters.version}`;
+    const apiUrl = `https://${parameters.endpoint}.openai.azure.com/openai/deployments/${parameters.model}/chat/completions?api-version=${parameters.version}`;
     const jsonString = JSON.stringify(messages);
-
     interface Message {
         role: string;
         content: string
     }
     const _messages: Message[] = JSON.parse(jsonString);
-    
     function formatMessages(messages: Message[]): string {
         let formattedMessages = '';
     
@@ -98,7 +98,7 @@ export async function createChatCompletion(messages: OpenAIMessage[], parameters
     const formattedMessages = formatMessages(_messages);
 
     const requestData = {
-        prompt: formattedMessages,
+        messages: _messages,
         max_tokens: 200,
     };
 
@@ -111,10 +111,10 @@ export async function createChatCompletion(messages: OpenAIMessage[], parameters
 
     try {
         const response = await axios.post(apiUrl, requestData, requestConfig);
-        // console.log("RES log", response.data.choices[0].text);
+        // console.log("RES log", response.data.choices[0]?.message?.content);
         // console.log("RES log", response.data);
         const specificStringToRemove = '<|im_end|>';
-        return response.data.choices[0].text.replace(specificStringToRemove, '');
+        return response.data.choices[0]?.message?.content;
       } catch (error) {
         console.error(error);
         return ''
@@ -180,7 +180,7 @@ export async function createStreamingChatCompletion(messages: OpenAIMessage[], p
     // 今のところデコード予定はない、投げる前にざっくりとしたトークン数を知りたいだけ
     // 本来はフォーク内のbpeを使ってみたかったが、とりあえず代替処理
     // const decoded = tokenizer.decode(encoded.bpe);
-    const eventSource = new SSE(`https://${parameters.endpoint}.openai.azure.com/openai/deployments/${parameters.model}/completions?api-version=${parameters.version}`, {
+    const eventSource = new SSE(`https://${parameters.endpoint}.openai.azure.com/openai/deployments/${parameters.model}/chat/completions?api-version=${parameters.version}`, {
         method: "POST",
         headers: {
             'api-key': parameters.apiKey,
@@ -188,7 +188,7 @@ export async function createStreamingChatCompletion(messages: OpenAIMessage[], p
         },
         payload: JSON.stringify({
             "temperature": parameters.temperature,
-            "prompt": formattedMessages,
+            "messages": _messages,
             "max_tokens": parameters.maxtoken,
             "stream": true,
         }),
@@ -232,10 +232,9 @@ export async function createStreamingChatCompletion(messages: OpenAIMessage[], p
         }
         try {
             const chunk = parseResponseChunk(event.data);
-
             if (chunk.choices && chunk.choices.length > 0) {
                 const specificStringToRemove = '<|im_end|>';
-                contents += chunk.choices[0]?.text.replace(specificStringToRemove, '') || '';
+                contents += chunk.choices[0]?.delta?.content || '';
                 emitter.emit('data', contents);
             }
         } catch (e) {

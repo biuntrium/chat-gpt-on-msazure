@@ -26,7 +26,7 @@ docker-compose build
 ```
 
 ```
-docker run -v $(pwd)/data:/app/data -p 3000:3000 chatra_app:latest
+docker run -v $(pwd)/data:/app/data -p 3000:3000 chatra_gpt4:latest
 ```
 
 Then navigate to http://localhost:3000 to view the app.
